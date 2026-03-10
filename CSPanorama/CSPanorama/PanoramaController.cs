@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,40 +15,35 @@ namespace CSPanorama
         public bool showUI = false;
         public bool showErr = false;
         public string Errmsg = "";
-        public float j = 0;
-
-        bool test = false;
-        string tests = "";
 
         Texture2D[] texs;
         Texture2D mergeTex;
 
         string ssFolder;
-        string settingFile;
-        string dateFormat;
         string div = "\\";
 
         string i_step = "100";
         string i_pass = "180";
         string i_filename = "myScreenshot";
         int windowWidth = 200;
-        int windowHeight = 400;
         Texture2D m_samptex;
         Rect windowpos;
         Rect windowposErr;
         bool fullViewIn = false;
-        bool fullViewFinished = false;
 
         bool k_shift = false;
         bool k_ctrl = true;
         bool k_alt = true;
         KeyCode k_ = KeyCode.P;
 
+        const int WindowIdMain = 38291;
+        const int WindowIdErr  = 38292;
+
         private void Start()
         {
             ssFolder = Environment.CurrentDirectory + div + "ScreenShotP" + div;
-            windowpos = new Rect(20, 20, windowWidth, windowHeight);
-            windowposErr = new Rect(20, 20, windowWidth, windowHeight);
+            windowpos = new Rect(20, 20, windowWidth, 400);
+            windowposErr = new Rect(20, 20, windowWidth, 400);
 
             CheckFolder();
             StartCoroutine(RefreshSamp());
@@ -56,18 +51,9 @@ namespace CSPanorama
 
         private void Update()
         {
-            if((shift || !k_shift)&&(ctrl || !k_ctrl)&&(alt || !k_alt)&& Input.GetKeyDown(k_))
+            if ((shift || !k_shift) && (ctrl || !k_ctrl) && (alt || !k_alt) && Input.GetKeyDown(k_))
             {
                 showUI = !showUI;
-            }
-
-            if (fullViewFinished)
-            {
-                fullViewFinished = false;
-                FileStream swr = File.Create(ssFolder + DateTime.Now.ToString("yyyyMMdd_HHmmss_") + i_filename + ".png");
-                byte[] imgbyte = mergeTex.EncodeToPNG();
-                swr.Write(imgbyte, 0, imgbyte.Length);
-                swr.Close();
             }
         }
 
@@ -75,13 +61,14 @@ namespace CSPanorama
         {
             if (!fullViewIn && showUI)
             {
-                windowpos = GUI.Window(38291, windowpos, MakeWindow, "Panorama Settings");
+                windowpos = GUI.Window(WindowIdMain, windowpos, MakeWindow, "Panorama Settings");
             }
             if (!fullViewIn && showErr)
             {
-                windowposErr = GUI.Window(38292, windowposErr, MakeWindowErr, "Panorama Error");
+                windowposErr = GUI.Window(WindowIdErr, windowposErr, MakeWindowErr, "Panorama Error");
             }
         }
+
         private void MakeWindowErr(int id)
         {
             int y = 10;
@@ -92,11 +79,12 @@ namespace CSPanorama
             GUI.Label(new Rect(0, y, windowWidth, 90), Errmsg);
             y += 90;
 
-            if(GUI.Button(new Rect(0, y, windowWidth, 20), "Close"))
+            if (GUI.Button(new Rect(0, y, windowWidth, 20), "Close"))
             {
                 showErr = false;
             }
         }
+
         private void MakeWindow(int id)
         {
             int y = 10;
@@ -140,16 +128,9 @@ namespace CSPanorama
                     throw new FormatException("File name is invalid:  " + i_filename);
                 }
 
-                //test = GUI.Toggle(new Rect(10, y, windowWidth - 20, 25), test, "test");
-                //y += 20;
-
-                //tests = GUI.TextArea(new Rect(10, y, windowWidth - 20, 100), tests);
-                //y += 100;
-
                 if (GUI.Button(new Rect(10, y, windowWidth - 20, 20), "Open Folder"))
                 {
                     System.Diagnostics.Process.Start("explorer.exe", ssFolder);
-                    //Debug.Log(Environment.CurrentDirectory);
                 }
                 y += 30;
 
@@ -164,7 +145,7 @@ namespace CSPanorama
             }
             catch (Exception e)
             {
-                //Debug.Log(e);
+                Debug.Log(e);
                 GUI.Label(new Rect(10, y, windowWidth - 20, 25), "WRONG FORMAT!");
                 y += 25;
             }
@@ -191,26 +172,27 @@ namespace CSPanorama
                 k_shift = false;
                 k_ctrl = false;
                 k_alt = false;
-                for(int infoi = 0;infoi < info.Length; infoi++)
+                for (int infoi = 0; infoi < info.Length; infoi++)
                 {
                     string thiskey = info[infoi];
-                    if(thiskey == "shift")
+                    if (thiskey == "shift")
                     {
                         k_shift = true;
                     }
-                    else if(thiskey == "control")
+                    else if (thiskey == "control")
                     {
                         k_ctrl = true;
                     }
-                    else if(thiskey == "alt")
+                    else if (thiskey == "alt")
                     {
                         k_alt = true;
                     }
                     else
                     {
                         bool kcfound = false;
-                        foreach (KeyCode kc in Enum.GetValues(typeof(KeyCode))){
-                            if(thiskey == kc.ToString())
+                        foreach (KeyCode kc in Enum.GetValues(typeof(KeyCode)))
+                        {
+                            if (thiskey == kc.ToString())
                             {
                                 k_ = kc;
                                 kcfound = true;
@@ -221,7 +203,6 @@ namespace CSPanorama
                         {
                             showErr = true;
                             Errmsg = "Can't find key:\n" + thiskey + "\nReset to default:\nalt+control+P";
-
                         }
                     }
                 }
@@ -230,24 +211,15 @@ namespace CSPanorama
 
         bool shift
         {
-            get
-            {
-                return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            }
+            get { return Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift); }
         }
         bool ctrl
         {
-            get
-            {
-                return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-            }
+            get { return Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl); }
         }
         bool alt
         {
-            get
-            {
-                return Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
-            }
+            get { return Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt); }
         }
 
         IEnumerator FullView(float startAngle, float passAngle, int step)
@@ -267,36 +239,16 @@ namespace CSPanorama
             float dist = (float)sch / 2 / Mathf.Tan(halfFOV * Mathf.Deg2Rad);
             float halfRad = Mathf.Atan((float)halfStep / dist);
             int move = Mathf.CeilToInt(passRad / (halfRad * 2));
-            int lastPxl = Mathf.CeilToInt(Mathf.Tan(passRad % (halfRad * 2) - halfRad) * dist + (float)halfStep);
-            
+            float lastRemainder = passRad % (halfRad * 2);
+            if (lastRemainder < Mathf.Epsilon) lastRemainder = halfRad * 2;
+            int lastPxl = Mathf.CeilToInt(Mathf.Tan(lastRemainder - halfRad) * dist + (float)halfStep);
+
             texs = new Texture2D[move];
             mergeTex = new Texture2D((move - 1) * halfStep * 2 + lastPxl, sch, texf, false);
 
-            Camera.main.GetComponent<CameraController>().enabled = false;
-            //Camera m_ori_cam = Camera.main;
-            //Camera m_alt_cam = Instantiate(m_ori_cam.gameObject).GetComponent<Camera>();
-            //Destroy(m_alt_cam.GetComponent<CameraController>());
-            //StreamWriter dbgsw = File.CreateText(ssFolder + "dbg.txt");
-            //if (test)
-            //{
-            //Component[] mb = m_alt_cam.GetComponents(typeof(MonoBehaviour));
-            //foreach (Component tmb in mb)
-            //{
-            //    if (tests.Contains(tmb.ToString()))
-            //    {
-            //        Destroy(tmb);
-            //    }
-            //    else
-            //    {
-            //        dbgsw.WriteLine(tmb.ToString());
-            //    }
-            //}
-            //}
-            //dbgsw.Close();
-            //int m_ori_disp = m_ori_cam.targetDisplay;
-            //m_ori_cam.targetDisplay = 1;
-            //m_alt_cam.targetDisplay = 0;
-            //m_alt_cam.gameObject.tag = "Untagged";
+            CameraController camCtrl = Camera.main.GetComponent<CameraController>();
+            camCtrl.enabled = false;
+
             for (int movei = 0; movei < move - 1; movei++)
             {
                 yield return new WaitForEndOfFrame();
@@ -304,21 +256,22 @@ namespace CSPanorama
                 Vector3 ceu = camt.eulerAngles;
                 ceu.y += halfRad * 2 * Mathf.Rad2Deg;
                 camt.eulerAngles = ceu;
-                //Vector3 ceu = m_alt_cam.transform.eulerAngles;
-                //ceu.y += halfRad * 2 * Mathf.Rad2Deg;
-                //m_alt_cam.transform.eulerAngles = ceu;
 
                 texs[movei] = new Texture2D(halfStep * 2, sch, texf, false);
                 texs[movei].ReadPixels(new Rect(halfWidth - halfStep, 0, halfStep * 2, sch), 0, 0);
                 texs[movei].Apply();
                 mergeTex.SetPixels(movei * halfStep * 2, 0, halfStep * 2, sch, texs[movei].GetPixels());
                 mergeTex.Apply();
+                Destroy(texs[movei]);
+                texs[movei] = null;
             }
             yield return new WaitForEndOfFrame();
             texs[move - 1] = new Texture2D(lastPxl, sch);
             texs[move - 1].ReadPixels(new Rect(halfWidth - halfStep + 1, 0, lastPxl, sch), 0, 0);
             texs[move - 1].Apply();
             mergeTex.SetPixels((move - 1) * halfStep * 2, 0, lastPxl, sch, texs[move - 1].GetPixels());
+            Destroy(texs[move - 1]);
+            texs[move - 1] = null;
             yield return 0;
             mergeTex.Apply();
 
@@ -326,13 +279,15 @@ namespace CSPanorama
             ceu_.y = startAngle;
             camt.eulerAngles = ceu_;
 
-            //Destroy(m_alt_cam);
-            //m_ori_cam.targetDisplay = m_ori_disp;
-
-            Camera.main.GetComponent<CameraController>().enabled = true;
-
+            camCtrl.enabled = true;
             fullViewIn = false;
-            fullViewFinished = true;
+
+            FileStream swr = File.Create(ssFolder + DateTime.Now.ToString("yyyyMMdd_HHmmss_") + i_filename + ".png");
+            byte[] imgbyte = mergeTex.EncodeToPNG();
+            swr.Write(imgbyte, 0, imgbyte.Length);
+            swr.Close();
+            Destroy(mergeTex);
+            mergeTex = null;
         }
 
         IEnumerator RefreshSamp()
@@ -344,15 +299,18 @@ namespace CSPanorama
                 {
                     try
                     {
-                        m_samptex = Samptex(windowWidth - 20);
+                        Texture2D newSamp = Samptex(windowWidth - 20);
+                        Destroy(m_samptex);
+                        m_samptex = newSamp;
                     }
                     catch (Exception e)
                     {
-                        //Debug.Log(e);
+                        Debug.Log(e);
                     }
                 }
             }
         }
+
         private Texture2D Samptex(int d)
         {
             int sch = Screen.height;
@@ -363,7 +321,9 @@ namespace CSPanorama
             float dist = (float)sch / 2 / Mathf.Tan(halfFOV * Mathf.Deg2Rad);
             float halfRad = Mathf.Atan((float)halfStep / dist);
             int move = Mathf.CeilToInt(passRad / (halfRad * 2));
-            int lastPxl = Mathf.CeilToInt(Mathf.Tan(passRad % (halfRad * 2) - halfRad) * dist + (float)halfStep);
+            float lastRemainder = passRad % (halfRad * 2);
+            if (lastRemainder < Mathf.Epsilon) lastRemainder = halfRad * 2;
+            int lastPxl = Mathf.CeilToInt(Mathf.Tan(lastRemainder - halfRad) * dist + (float)halfStep);
             float r = (float)d / 2;
             float ind = (float)d / 8 * 3;
 
@@ -410,6 +370,7 @@ namespace CSPanorama
             samptex.Apply();
             return samptex;
         }
+
         private void ClearTex(Texture2D tex, Color c)
         {
             for (int xi = 0; xi < tex.width; xi++)
@@ -420,6 +381,7 @@ namespace CSPanorama
                 }
             }
         }
+
         private void Plot(Texture2D tex, int x, int y, int d, Color c)
         {
             for (int xi = x - d + 1; xi <= x + d; xi++)
@@ -430,6 +392,7 @@ namespace CSPanorama
                 }
             }
         }
+
         private void DrawLine(Texture2D tex, float x1, float y1, float x2, float y2, float step, Color c)
         {
             if (x1 > x2)
@@ -468,26 +431,17 @@ namespace CSPanorama
 
         private bool IsFileNameValid(string name)
         {
-            bool res = true;
             string[] errorStr = new string[] { "/", "\\", ":", ",", "*", "?", "\"", "<", ">", "|" };
 
             if (string.IsNullOrEmpty(name))
-            {
-                res = false;
-            }
-            else
-            {
-                for (int i = 0; i < errorStr.Length; i++)
-                {
-                    if (name.Contains(errorStr[i]))
-                    {
-                        res = false;
-                        break;
-                    }
-                }
-            }
-            return res;
-        }
+                return false;
 
+            for (int i = 0; i < errorStr.Length; i++)
+            {
+                if (name.Contains(errorStr[i]))
+                    return false;
+            }
+            return true;
+        }
     }
 }

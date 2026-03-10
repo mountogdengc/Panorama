@@ -29,15 +29,26 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <!-- Resolve Cities: Skylines managed DLL directory.
+       Priority: CITIES_SKYLINES_DIR env var > common Steam paths. -->
+  <PropertyGroup>
+    <CitiesManaged Condition="'$(CITIES_SKYLINES_DIR)' != ''">$(CITIES_SKYLINES_DIR)\Cities_Data\Managed</CitiesManaged>
+    <CitiesManaged Condition="'$(CitiesManaged)' == '' AND Exists('C:\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed')">C:\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed</CitiesManaged>
+    <CitiesManaged Condition="'$(CitiesManaged)' == '' AND Exists('C:\Program Files\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed')">C:\Program Files\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed</CitiesManaged>
+    <CitiesManaged Condition="'$(CitiesManaged)' == '' AND Exists('D:\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed')">D:\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed</CitiesManaged>
+    <CitiesManaged Condition="'$(CitiesManaged)' == '' AND Exists('D:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed')">D:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed</CitiesManaged>
+    <CitiesManaged Condition="'$(CitiesManaged)' == '' AND Exists('E:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed')">E:\SteamLibrary\steamapps\common\Cities_Skylines\Cities_Data\Managed</CitiesManaged>
+  </PropertyGroup>
+
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(CitiesManaged)\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="ColossalManaged">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\ColossalManaged.dll</HintPath>
+      <HintPath>$(CitiesManaged)\ColossalManaged.dll</HintPath>
     </Reference>
     <Reference Include="ICities">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\ICities.dll</HintPath>
+      <HintPath>$(CitiesManaged)\ICities.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -48,10 +59,10 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(CitiesManaged)\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(CitiesManaged)\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -60,11 +71,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
   <Target Name="AfterBuild">
+    <PropertyGroup>
+      <ModsDir>$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\CSPanorama</ModsDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(ModsDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModsDir)" />
   </Target>
-  -->
 </Project>
